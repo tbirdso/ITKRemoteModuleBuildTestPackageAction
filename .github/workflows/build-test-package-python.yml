@@ -34,7 +34,7 @@ on:
         description: 'colon-delimited list of "<manylinux-image>-<arch>" specializations'
         required: false
         type: string
-        default: "_2_28-aarch64:_2_28-x64:2014-x64"
+        default: "_2_28-x64:2014-x64:_2_28-aarch64"
     secrets:
       pypi_password:
         required: false  # Packages will not be uploaded to PyPI if not set
