@@ -40,6 +40,17 @@ on:
         required: false  # Packages will not be uploaded to PyPI if not set
 
 jobs:
+  echo-inputs:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: 'Echo inputs'
+      run: |
+        echo "running"
+        #echo "inputs.manylinux-platforms ${{ inputs.manylinux-platforms }}"
+        #echo "fromJSON(inputs.manylinux-platforms) ${{ fromJSON(inputs.manylinux-platforms) }}"
+        #echo "github.events.inputs.manylinux-platforms ${{ github.events.inputs.manylinux-platforms }}"
+
   build-linux-python-packages:
     runs-on: ubuntu-22.04
     strategy:
