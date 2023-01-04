@@ -34,22 +34,24 @@ on:
         description: 'colon-delimited list of "<manylinux-image>-<arch>" specializations'
         required: false
         type: string
-        default: '[_2_28-x64,2014-x64,_2_28-aarch64]'
+        default: '["_2_28-x64","2014-x64","_2_28-aarch64"]'
     secrets:
       pypi_password:
         required: false  # Packages will not be uploaded to PyPI if not set
 
 jobs:
-  echo-inputs:
+  echo-linux-python-packages:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: 'Echo inputs'
+    - uses: actions/checkout@v3
+
+    - name: 'Free up disk space'
       run: |
-        echo "running"
-        #echo "inputs.manylinux-platforms ${{ inputs.manylinux-platforms }}"
-        #echo "fromJSON(inputs.manylinux-platforms) ${{ fromJSON(inputs.manylinux-platforms) }}"
-        #echo "github.events.inputs.manylinux-platforms ${{ github.events.inputs.manylinux-platforms }}"
+        # Workaround for https://github.com/actions/virtual-environments/issues/709
+        df -h
+        echo "${{ inputs.manylinux-platforms }}"
+        echo "${{ toJSON(inputs.manylinux-platforms) }}"
 
   build-linux-python-packages:
     runs-on: ubuntu-22.04
