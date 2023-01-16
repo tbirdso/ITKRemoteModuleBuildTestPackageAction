@@ -96,6 +96,26 @@ jobs:
         echo "Building for manylinux specialization ${MANYLINUX_VERSION} and target architecture ${TARGET_ARCH}"
         ./dockcross-manylinux-download-cache-and-build-module-wheels.sh cp${{ matrix.python-version }} $CMAKE_OPTIONS
 
+    - name: Validate build output
+      shell: bash
+      run: |
+        MANYLINUX_PLATFORM=${{ matrix.manylinux-platform }}
+        MANYLINUX_VERSION=`(echo ${MANYLINUX_PLATFORM} | cut -d '-' -f 1)`
+        TARGET_ARCH_NAME=`(echo ${MANYLINUX_PLATFORM} | cut -d '-' -f 2)`
+        if [[ ${TARGET_ARCH_NAME} == "x64" ]]; then
+          TARGET_ARCH_NAME="x86_64" # Match auditwheel naming convention
+        fi
+        WHEEL_PATTERN="dist/itk_*cp${{ matrix.python-version }}*manylinux${MANYLINUX_VERSION}*${TARGET_ARCH_NAME}.whl"
+
+        echo "Searching for wheels matching pattern ${WHEEL_PATTERN}"
+        dist_wheels=`(ls ${WHEEL_PATTERN})`
+        if [[ ${dist_wheels} ]]; then
+          echo "Found ${dist_wheels}"
+        else
+          echo "Wheel build was expected but not found"
+          exit 1
+        fi
+
     - name: Publish Python package as GitHub Artifact
       uses: actions/upload-artifact@v3
       with:
@@ -140,6 +160,18 @@ jobs:
           CMAKE_OPTIONS="--cmake_options ${{ inputs.cmake-options }}"
         fi
         ./macpython-download-cache-and-build-module-wheels.sh $CMAKE_OPTIONS
+
+    - name: Validate build output
+      shell: bash
+      run: |
+        ls dist/
+        WHEEL_PATTERN="dist/itk_*macosx*.whl"
+        EXPECTED_WHEEL_COUNT=5
+        WHEEL_COUNT=`(ls ${WHEEL_PATTERN} | wc -l)`
+        if (( ${WHEEL_COUNT} != ${EXPECTED_WHEEL_COUNT} )); then
+          echo "Expected ${EXPECTED_WHEEL_COUNT} wheels but found ${WHEEL_COUNT}"
+          exit 1
+        fi
 
     - name: Publish Python package as GitHub Artifact
       uses: actions/upload-artifact@v3
@@ -195,6 +227,20 @@ jobs:
 
         mkdir -p '${{ github.workspace }}\dist'
         cp 'dist\*.whl' '${{ github.workspace }}\dist'
+
+    - name: Validate build output
+      shell: bash
+      run: |
+        ls dist/
+        WHEEL_PATTERN="dist/itk_*cp3${{ matrix.python-version-minor }}*win*.whl"
+        echo "Searching for wheels matching pattern ${WHEEL_PATTERN}"
+        dist_wheels=`(ls ${WHEEL_PATTERN})`
+        if [[ ${dist_wheels} ]]; then
+          echo "Found ${dist_wheels}"
+        else
+          echo "Wheel build was expected but not found"
+          exit 1
+        fi
 
     - name: Publish Python package as GitHub Artifact
       uses: actions/upload-artifact@v3
